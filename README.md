@@ -18,22 +18,23 @@ The Lunar Lander environment is a classic reinforcement learning problem where t
 
 To get started with this project, follow these steps:
 
-1.  Clone this repository:
+1. Clone this repository:
 
         git clone https://github.com/Siddharth-2382/Lunar-Lander-AI.git
         cd Lunar-Lander-AI
 
-2.  Install the required dependencies. You can use a virtual environment if desired:
-
-        pip3 install -r requirements.txt
+2. Install the required dependencies. You can use a virtual environment if desired:
+        pip install swig
+        pip install -r requirements.txt
 
 ## Requirements
 
-- Python 3.7+
-- OpenAI Gym
+- Python 3.11
+- Gymnasium
 - NumPy
-- TensorFlow
-- Other libraries
+- TensorFlow (with CUDA support by default). Remove the `[and-cuda]` extras to disable CUDA support.
+
+Find more in `requirements.txt`.
 
 ## Usage
 
@@ -45,4 +46,5 @@ To get started with this project, follow these steps:
 The trained agent demonstrates successful landings in the Lunar Lander environment. You can view a video of the agent's performance in the `videos` directory.
 
 ## DEMO
+
 ![trained_agent](https://github.com/Siddharth-2382/Lunar-Lander-AI/assets/94699055/9a0dab80-0fa7-4a22-ac0e-ad141021b6f8)

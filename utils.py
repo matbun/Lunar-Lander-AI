@@ -27,7 +27,7 @@ def get_experiences(memory_buffer):
     Retrieves a random sample of experience tuples from the given memory_buffer and
     returns them as TensorFlow Tensors. The size of the random sample is determined by
     the mini-batch size (MINIBATCH_SIZE). 
-    
+
     Args:
         memory_buffer (deque):
             A deque containing experiences. The experiences are stored in the memory
@@ -64,7 +64,8 @@ def get_experiences(memory_buffer):
         np.array([e.next_state for e in experiences if e is not None]), dtype=tf.float32
     )
     done_vals = tf.convert_to_tensor(
-        np.array([e.done for e in experiences if e is not None]).astype(np.uint8),
+        np.array([e.done for e in experiences if e is not None]
+                 ).astype(np.uint8),
         dtype=tf.float32,
     )
     return (states, actions, rewards, next_states, done_vals)
@@ -78,7 +79,7 @@ def check_update_conditions(t, num_steps_upd, memory_buffer):
     memory_buffer has enough experience tuples to fill a mini-batch (for example, if the
     mini-batch size is 64, then the memory buffer should have more than 64 experience
     tuples in order to perform a learning update).
-    
+
     Args:
         t (int):
             The current time step.
@@ -103,7 +104,7 @@ def check_update_conditions(t, num_steps_upd, memory_buffer):
 def get_new_eps(epsilon):
     """
     Updates the epsilon value for the ε-greedy policy.
-    
+
     Gradually decreases the value of epsilon towards a minimum value (E_MIN) using the
     given ε-decay rate (E_DECAY).
 
@@ -126,7 +127,7 @@ def get_action(q_values, epsilon=0.0):
         - With probability epsilon, it will return an action chosen at random.
         - With probability (1 - epsilon), it will return the action that yields the
         maximum Q value in q_values.
-    
+
     Args:
         q_values (tf.Tensor):
             The Q values returned by the Q-Network. For the Lunar Lander environment
@@ -149,14 +150,14 @@ def get_action(q_values, epsilon=0.0):
 def update_target_network(q_network, target_q_network):
     """
     Updates the weights of the target Q-Network using a soft update.
-    
+
     The weights of the target_q_network are updated using the soft update rule:
-    
+
                     w_target = (TAU * w) + (1 - TAU) * w_target
-    
+
     where w_target are the weights of the target_q_network, TAU is the soft update
     parameter, and w are the weights of the q_network.
-    
+
     Args:
         q_network (tf.keras.Sequential): 
             The Q-Network. 
@@ -167,7 +168,8 @@ def update_target_network(q_network, target_q_network):
     for target_weights, q_net_weights in zip(
         target_q_network.weights, q_network.weights
     ):
-        target_weights.assign(TAU * q_net_weights + (1.0 - TAU) * target_weights)
+        target_weights.assign(TAU * q_net_weights +
+                              (1.0 - TAU) * target_weights)
 
 
 def plot_history(point_history, **kwargs):
@@ -287,36 +289,36 @@ def display_table(current_state, action, next_state, reward, done):
             The done value returned by the Lunar Lander environment after the agent
             takes an action, i.e the done value returned after running a single time
             step of the environment's dynamics using env.step(action).
-    
+
     Returns:
         table (Pandas Dataframe):
             A dataframe containing the current_state, action, next_state, reward,
             and done values. This will result in the table being displayed in the
             Jupyter Notebook.
     """
-    
+
     STATE_VECTOR_COL_NAME = 'State Vector'
     DERIVED_COL_NAME = 'Derived from the State Vector (the closer to zero, the better)'
-    
+
     # States
-    add_derived_info = lambda state: np.hstack([
-        state, 
+    def add_derived_info(state): return np.hstack([
+        state,
         [(state[0]**2 + state[1]**2)**.5],
         [(state[2]**2 + state[3]**2)**.5],
         [np.abs(state[4])]
     ])
-    
+
     modified_current_state = add_derived_info(current_state)
     modified_next_state = add_derived_info(next_state)
-    
+
     states = np.vstack([
-        modified_current_state, 
+        modified_current_state,
         modified_next_state,
-        modified_next_state - modified_current_state,        
+        modified_next_state - modified_current_state,
     ]).T
-    
-    get_state = lambda idx, type=np.float32: dict(zip(
-        ['Current State', 'Next State'], 
+
+    def get_state(idx, type=np.float32): return dict(zip(
+        ['Current State', 'Next State'],
         states[idx].astype(type)
     ))
 
@@ -337,34 +339,36 @@ def display_table(current_state, action, next_state, reward, done):
             (STATE_VECTOR_COL_NAME, 'Velocity', 'Y (Vertical)'): get_state(3),
             (STATE_VECTOR_COL_NAME, 'Tilting', 'Angle'): get_state(4),
             (STATE_VECTOR_COL_NAME, 'Tilting', 'Angular Velocity'): get_state(5),
-            (STATE_VECTOR_COL_NAME, 'Ground contact', 'Left Leg?'): get_state(6, np.bool),
-            (STATE_VECTOR_COL_NAME, 'Ground contact', 'Right Leg?'): get_state(7, np.bool),
+            (STATE_VECTOR_COL_NAME, 'Ground contact', 'Left Leg?'): get_state(6, bool),
+            (STATE_VECTOR_COL_NAME, 'Ground contact', 'Right Leg?'): get_state(7, bool),
             (DERIVED_COL_NAME, 'Distance from landing pad', ''): get_state(8),
             (DERIVED_COL_NAME, 'Velocity', ''): get_state(9),
             (DERIVED_COL_NAME, 'Tilting Angle (absolute value)', ''): get_state(10),
-        })\
-            .fillna('')\
-            .reindex(['Current State', 'Action', 'Next State', 'Reward', 'Episode Terminated'])\
-            .style\
-            .applymap(lambda x: 'background-color : grey' if x == '' else '')\
-            .set_table_styles(
-                [
-                    {"selector": "th", "props": [("border", "1px solid grey"), ('text-align', 'center')]},
-                    {"selector": "tbody td", "props": [("border", "1px solid grey"), ('text-align', 'center')]},
-                ]
-            )
+        })
+        .fillna('')
+        .reindex(['Current State', 'Action', 'Next State', 'Reward', 'Episode Terminated'])
+        .style
+        .map(lambda x: 'background-color : grey' if x == '' else '')
+        .set_table_styles(
+            [
+                {"selector": "th", "props": [
+                    ("border", "1px solid grey"), ('text-align', 'center')]},
+                {"selector": "tbody td", "props": [
+                    ("border", "1px solid grey"), ('text-align', 'center')]},
+            ]
+        )
     )
 
 
 def embed_mp4(filename):
     """
     Embeds an MP4 video file in a Jupyter notebook.
-    
+
     Args:
         filename (string):
             The path to the the MP4 video file that will be embedded (i.e.
             "./videos/lunar_lander.mp4").
-    
+
     Returns:
         Returns a display object from the given video file. This will result in the
         video being displayed in the Jupyter Notebook.
